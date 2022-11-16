@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SPAMER</title>
+</head>
+
+
+<body>
+    <form action="/#" method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="fieldWrapper">
+                {{ field.errors }}
+                {{ field.label_tag }}<br>{{ field }}
+            </div>
+            <br>
+        {% endfor %}
+        <p><input type="submit" value="Send message" /></p>
+    </form>
+</body>
+
+</html>
