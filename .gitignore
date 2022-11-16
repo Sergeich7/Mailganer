@@ -1,3 +1,10 @@
+# материалы для разработки
+Материалы/
+ttt.py
+
+# пароли
+.env
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
