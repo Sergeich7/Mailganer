@@ -6,7 +6,8 @@ from .tasks import send_one_mail
 
 class DataForm(forms.Form):
     mail_list = forms.CharField(label='Адресаты', widget=forms.Textarea)
-    mail_templ = forms.CharField(label='Шаблон', widget=forms.Textarea)
+    mail_templ = forms.CharField(label='TXT шаблон', widget=forms.Textarea)
+    html_templ = forms.CharField(label='HTML шаблон', widget=forms.Textarea)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -14,7 +15,18 @@ class DataForm(forms.Form):
             'Виталий|vit@yanddex.ru\nТатьяна|tan@yanddex.ru'
         self.fields['mail_templ'].initial =\
             'Привет {{Name}}!\nВаш email: {{Email}}\nМы пришлем много спама)'
-
+        self.fields['html_templ'].initial = """
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        <h1>Привет {{Name}}!</h1>
+        <h2>Ваш email: {{Email}}</h2>
+	<p>Мы пришлем много спама</p>
+    </body>
+</html>
+"""
 
 class IndexView(FormView):
     template_name = 'spamer/index.html'
@@ -25,9 +37,11 @@ class IndexView(FormView):
         """Рассылка почты отложенная на 20 сек в асинхронном режиме."""
         mail_list = self.request.POST.get('mail_list', '').split('\n')
         mail_templ = self.request.POST.get('mail_templ', '')
+        html_templ = self.request.POST.get('html_templ', '')
         for s in mail_list:
             n, e = s.replace('\r', '').split('|')
             # Запускаем задачу отправку одного письма отложенную на 20 сек
-            send_one_mail.apply_async((mail_templ, n, e), countdown=20)
+            send_one_mail.apply_async(
+                (mail_templ, html_templ, n, e), countdown=20)
 
         return super().form_valid(form)
