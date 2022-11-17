@@ -10,8 +10,10 @@ class DataForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['mail_list'].initial = 'Виталий|vit@yanddex.ru\nТатьяна|tan@yanddex.ru'
-        self.fields['mail_templ'].initial = 'Привет {{Name}}!\nВаш email: {{Email}}\nМы пришлем много спама)'
+        self.fields['mail_list'].initial =\
+            'Виталий|vit@yanddex.ru\nТатьяна|tan@yanddex.ru'
+        self.fields['mail_templ'].initial =\
+            'Привет {{Name}}!\nВаш email: {{Email}}\nМы пришлем много спама)'
 
 
 class IndexView(FormView):
@@ -20,11 +22,12 @@ class IndexView(FormView):
     success_url = reverse_lazy('spamer:index')
 
     def form_valid(self, form):
-        """Отправка письма владельцу сайта, если форма валидна."""
+        """Рассылка почты отложенная на 20 сек в асинхронном режиме."""
         mail_list = self.request.POST.get('mail_list', '').split('\n')
         mail_templ = self.request.POST.get('mail_templ', '')
         for s in mail_list:
             n, e = s.replace('\r', '').split('|')
-            send_one_mail.delay(mail_templ, n, e)
+            # Запускаем задачу отправку одного письма отложенную на 20 сек
+            send_one_mail.apply_async((mail_templ, n, e), countdown=20)
 
         return super().form_valid(form)
